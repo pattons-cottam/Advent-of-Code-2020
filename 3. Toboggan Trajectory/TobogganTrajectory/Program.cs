@@ -27,7 +27,6 @@ namespace TobogganTrajectory
     {
         public static long CalculateCollisionsForMultipleRoutes(string[] input, (int right, int down)[] routes)
         {
-            // This will break if any of the routes miss all the trees
             long totalCollisions = 1;
 
             foreach(var route in routes)
@@ -36,10 +35,10 @@ namespace TobogganTrajectory
 
                 Console.WriteLine($"{route} => {collisions} collisions");
 
-                totalCollisions *= collisions;
+                if (collisions > 0) totalCollisions *= collisions;
             }
 
-            return totalCollisions;
+            return totalCollisions == 0 ? 1 : totalCollisions;
         }
 
         public static int CalculateCollisions(string[] input, int right, int down)
