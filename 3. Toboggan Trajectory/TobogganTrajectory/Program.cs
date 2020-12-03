@@ -38,7 +38,7 @@ namespace TobogganTrajectory
                 if (collisions > 0) totalCollisions *= collisions;
             }
 
-            return totalCollisions == 0 ? 1 : totalCollisions;
+            return totalCollisions; // this will always return at least one, can't be bothered rewriting to handle zero
         }
 
         public static int CalculateCollisions(string[] input, int right, int down)
