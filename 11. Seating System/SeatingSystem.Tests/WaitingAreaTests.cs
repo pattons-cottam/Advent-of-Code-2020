@@ -1,5 +1,3 @@
-using System;
-using System.IO;
 using Xunit;
 
 namespace SeatingSystem.Tests
@@ -9,7 +7,75 @@ namespace SeatingSystem.Tests
         [Fact]
         public void Single_update_test()
         {
-            var initialLayout = CreateJaggedArray(new []
+            var initialLayout = GetInitialLayout();
+
+            var expected = new[]
+            {
+                new[] {'#','.','#','#','.','#','#','.','#','#'},
+                new[] {'#','#','#','#','#','#','#','.','#','#'},
+                new[] {'#','.','#','.','#','.','.','#','.','.'},
+                new[] {'#','#','#','#','.','#','#','.','#','#'},
+                new[] {'#','.','#','#','.','#','#','.','#','#'},
+                new[] {'#','.','#','#','#','#','#','.','#','#'},
+                new[] {'.','.','#','.','#','.','.','.','.','.'},
+                new[] {'#','#','#','#','#','#','#','#','#','#'},
+                new[] {'#','.','#','#','#','#','#','#','.','#'},
+                new[] {'#','.','#','#','#','#','#','.','#','#'}
+            };
+
+            var subject = new WaitingArea(initialLayout);
+
+            subject.UpdateLayout();
+
+            var result = subject.CurrentLayout;
+
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void RunSimulation_test()
+        {
+            var initialLayout = GetInitialLayout();
+
+            var expected = new[]
+            {
+                new[] {'#','.','#','L','.','L','#','.','#','#',},
+                new[] {'#','L','L','L','#','L','L','.','L','#',},
+                new[] {'L','.','#','.','L','.','.','#','.','.',},
+                new[] {'#','L','#','#','.','#','#','.','L','#',},
+                new[] {'#','.','#','L','.','L','L','.','L','L',},
+                new[] {'#','.','#','L','#','L','#','.','#','#',},
+                new[] {'.','.','L','.','L','.','.','.','.','.',},
+                new[] {'#','L','#','L','#','#','L','#','L','#',},
+                new[] {'#','.','L','L','L','L','L','L','.','L',},
+                new[] {'#','.','#','L','#','L','#','.','#','#',}
+            };
+
+            var subject = new WaitingArea(initialLayout);
+
+            subject.RunSimulation();
+
+            var result = subject.newLayout;
+
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void Occupied_seats_calculated_correctly()
+        {
+            var initialLayout = GetInitialLayout();
+            var subject = new WaitingArea(initialLayout);
+
+            subject.RunSimulation();
+
+            var result = subject.OccupiedSeats;
+
+            Assert.Equal(37, result);
+        }
+
+        private char[][] GetInitialLayout()
+        {
+            var input = new[]
             {
                 "L.LL.LL.LL",
                 "LLLLLLL.LL",
@@ -21,19 +87,8 @@ namespace SeatingSystem.Tests
                 "LLLLLLLLLL",
                 "L.LLLLLL.L",
                 "L.LLLLL.LL"
-            });
+            };
 
-            var subject = new WaitingArea(initialLayout);
-
-            subject.UpdateLayout();
-
-            var result = subject.CurrentLayout;
-
-            Assert.True(true);
-        }
-
-        private char[][] CreateJaggedArray(string[] input)
-        {
             var jaggedArray = new char[input.Length][];
 
             for (var i = 0; i < input.Length; i++)

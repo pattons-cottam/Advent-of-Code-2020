@@ -3,22 +3,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-// Action<string> p = input => Console.WriteLine(input.ToString());
 
 PartOne();
 
+// Action<string> print = input => Console.WriteLine(input.ToString());
+
 void PartOne()
 {
-    var initialLayout = CreateJaggedArray("./test.txt");
+    // var initialLayout = CreateJaggedArray("./test.txt");
+    var initialLayout = CreateJaggedArray("./input.txt");
 
-    var layout = new WaitingArea(initialLayout);
+    var waitingArea = new WaitingArea(initialLayout);
 
-    layout.UpdateLayout();
+    waitingArea.RunSimulation();
+
+    Console.WriteLine($"there are {waitingArea.OccupiedSeats} occupied seats");    
 }
 
 char[][] CreateJaggedArray(string fileName)
 {
-    var input = File.ReadAllLines("./test.txt");
+    var input = File.ReadAllLines(fileName);
     var jaggedArray = new char[input.Length][];
 
     for (var i = 0; i < input.Length; i++)
@@ -35,43 +39,52 @@ public class WaitingArea
         this.newLayout = new char[initialLayout.Length][];
     }
 
-    public enum OccupancyType
+    private char[][] initialLayout;
+    public char[][] newLayout;
+    private bool positionsChanged;
+
+    public char[][] CurrentLayout => this.newLayout;
+
+    public int OccupiedSeats
     {
-        Empty = 'L',
-        Occupied = '#',
-        Floor = '.'
+        get 
+        {
+            return this.newLayout.Sum(l => l.Count(m => m == '#'));
+        }
     }
 
-    private char[][] initialLayout;
-    private char[][] newLayout;
 
-    public char[][] CurrentLayout => newLayout;
+    public void RunSimulation()
+    {
+        this.positionsChanged = true;
+
+        while (this.positionsChanged)
+        {
+            UpdateLayout();
+            Array.Copy(this.newLayout, this.initialLayout, this.newLayout.Length);
+        }
+    }
 
     public void UpdateLayout()
     {
-        for (var i = 0; i < initialLayout.Length; i++)
-        {
-            if (newLayout[i] == null)
-                newLayout[i] = new char[initialLayout[0].Length];
+        this.positionsChanged = false;
 
-            for (var j = 0; j < initialLayout[0].Length; j++)
+        for (var i = 0; i < this.initialLayout.Length; i++)
+        {
+            this.newLayout[i] = new char[this.initialLayout[0].Length];
+
+            for (var j = 0; j < this.initialLayout[0].Length; j++)
             {
                 // set the matching position in the newlayout to the updated version of the current value
-                // newLayout[i][j] = (char)CalculateNewOccupancyType(initialLayout[i][j], i, j);
-                newLayout[i][j] = CalculateNewOccupancyType(initialLayout[i][j], i, j);
+                this.newLayout[i][j] = CalculateNewOccupancyType(this.initialLayout[i][j], i, j);
             }
         }
     }
 
-    // public OccupancyType CalculateNewOccupancyType(char currentState, int i, int j)
-    public char CalculateNewOccupancyType(char currentState, int i, int j)
+    private char CalculateNewOccupancyType(char currentState, int i, int j)
     {
-        // var stateAsEnum = Enum.Parse<OccupancyType>($"{currentState}");
-
-        // if (stateAsEnum == OccupancyType.Floor)
         if (currentState == '.')
             return currentState;
-            // return OccupancyType.Floor;
 
         var neighbourPositions = new int[][]
         {
@@ -91,7 +104,7 @@ public class WaitingArea
         {
             try
             {
-                neighbours.Add(initialLayout[p[0]][p[1]]);
+                neighbours.Add(this.initialLayout[p[0]][p[1]]);
             }
             catch
             {
@@ -100,24 +113,25 @@ public class WaitingArea
             }
         }
 
-        // switch (stateAsEnum)
         switch (currentState)
         {
-            // case OccupancyType.Occupied:
             case '#':
                 if (neighbours.Count(n => n == '#') > 3)
+                {
+                    this.positionsChanged = true;
                     return 'L';
-                    // return OccupancyType.Empty;
+                }
                 break;
 
             case 'L':
                 if (!neighbours.Any(n => n == '#'))
+                {
+                    this.positionsChanged = true;
                     return '#';
-                    // return OccupancyType.Occupied;
+                }
                 break;
         }
 
-        // return stateAsEnum;
         return currentState;
     }
 }
